@@ -1,36 +1,78 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF‑8">
-  <title>Bid for a Table — Choice is Yours</title>
-  <link rel="stylesheet" href="styles.css">
-</head>
-<body>
-  <header>
-    <h1>Place Your Bid</h1>
-    <nav>
-      <a href="index.html">Home</a> |
-      <a href="menu.html">Menu</a> |
-      <a href="contact.html">Contact</a>
-    </nav>
-  </header>
-  <div class="container">
-    <div id="timer">Time left: 02:00</div>
-    <div>
-      <label>Your Name: <input type="text" id="name" placeholder="Enter name"></label><br><br>
-      <label>Your Bid Amount: ₹ <input type="number" id="bid" min="1" step="1"></label><br><br>
-      <button id="placeBid">Place Bid</button>
-    </div>
-    <div style="margin-top:2rem;">
-      <h3>Highest Bid</h3>
-      <p id="highestBid">₹ 0</p>
-      <p id="highestBidder">—</p>
-    </div>
-    <div id="result" style="margin-top:2rem; font-size:1.2rem;"></div>
-  </div>
-  <footer>
-    <p>Open 24/7</p>
-  </footer>
-  <script src="script.js"></script>
-</body>
-</html>
+<script>
+  (() => {
+    let timeLeft = 120;
+    let highest = 0;
+    let highestName = '—';
+    let interval;
+
+    const timerEl = document.getElementById('timer');
+    const bidInput = document.getElementById('bid');
+    const nameInput = document.getElementById('name');
+    const highestBidEl = document.getElementById('highestBid');
+    const highestBidderEl = document.getElementById('highestBidder');
+    const resultEl = document.getElementById('result');
+    const form = document.getElementById('bidForm');
+    const placeBidBtn = document.getElementById('placeBid');
+
+    function updateTimer() {
+      const mins = String(Math.floor(timeLeft / 60)).padStart(2, '0');
+      const secs = String(timeLeft % 60).padStart(2, '0');
+      timerEl.textContent = `Time left: ${mins}:${secs}`;
+
+      if (timeLeft <= 0) {
+        clearInterval(interval);
+        placeBidBtn.disabled = true;
+        resultEl.textContent = `⏱ Auction over! Winner is ${highestName} with ₹${highest}`;
+      }
+      timeLeft--;
+    }
+
+    // Start the countdown timer
+    interval = setInterval(() => {
+      if (timeLeft >= 0) {
+        updateTimer();
+      }
+    }, 1000);
+
+    form.addEventListener('submit', (e) => {
+      e.preventDefault();
+
+      // Get input values
+      const bid = parseInt(bidInput.value, 10);
+      const name = nameInput.value.trim();
+
+      // Basic validation
+      if (!name) {
+        alert('Please enter your name.');
+        nameInput.focus();
+        return;
+      }
+      if (isNaN(bid) || bid <= 0) {
+        alert('Please enter a valid bid amount greater than 0.');
+        bidInput.focus();
+        return;
+      }
+      if (bid <= highest) {
+        alert(`Your bid must be higher than the current highest bid of ₹${highest}.`);
+        bidInput.focus();
+        return;
+      }
+      if (timeLeft <= 0) {
+        alert('The auction is already over.');
+        return;
+      }
+
+      // Update highest bid
+      highest = bid;
+      highestName = name;
+      highestBidEl.textContent = `₹ ${highest}`;
+      highestBidderEl.textContent = highestName;
+
+      // Clear bid input for next entry
+      bidInput.value = '';
+      nameInput.value = '';
+
+      alert('You are the highest bidder now!');
+    });
+  })();
+</script>
